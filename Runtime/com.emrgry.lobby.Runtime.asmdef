@@ -1,0 +1,19 @@
+{
+    "name": "Emrgry.Lobby",
+    "rootNamespace": "Emrgry.Lobby",
+    "references": [
+        "Unity.Services.Multiplayer",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

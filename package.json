@@ -1,0 +1,15 @@
+{
+  "name": "com.emrgry.lobby",
+  "version": "1.0.0",
+  "displayName": "Emrgry Lobby System",
+  "description": "UGS-backed lobby service: create, query, join (id/code), leave, delete, heartbeat. Supports password-protected lobbies.",
+  "unity": "6000.0",
+  "author": {
+    "name": "emrgry",
+    "url": "https://github.com/emrgry"
+  },
+  "dependencies": {
+    "com.unity.services.multiplayer": "2.1.3",
+    "com.cysharp.unitask": "2.5.10"
+  }
+}
