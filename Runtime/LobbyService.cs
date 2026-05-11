@@ -23,8 +23,13 @@ namespace Emrgry.Lobby
 
         public string CurrentLobbyId => _currentLobby?.Id;
         public bool IsInLobby => _currentLobby != null;
+        public bool IsLocalPlayerHost =>
+            _currentLobby != null
+            && AuthenticationService.Instance.IsSignedIn
+            && _currentLobby.HostId == AuthenticationService.Instance.PlayerId;
 
         public event Action LobbyChanged;
+        public event Action<LobbyInfo> LobbyDataChanged;
 
         public async UniTask<LobbyInfo> CreateLobbyAsync(
             string lobbyName, int maxPlayers, bool isPasswordProtected, string relayJoinCode, string password = null)
@@ -140,7 +145,9 @@ namespace Emrgry.Lobby
             };
 
             _currentLobby = await UGSLobbyService.Instance.UpdateLobbyAsync(_currentLobby.Id, options);
+            var info = ToLobbyInfo(_currentLobby);
             LobbyChanged?.Invoke();
+            LobbyDataChanged?.Invoke(info);
         }
 
         public async UniTask DeleteLobbyAsync()

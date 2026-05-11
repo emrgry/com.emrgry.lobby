@@ -2,6 +2,8 @@
     "name": "Emrgry.Lobby",
     "rootNamespace": "Emrgry.Lobby",
     "references": [
+        "com.emrgry.core.Runtime",
+        "com.emrgry.network.Runtime",
         "Unity.Services.Multiplayer",
         "Unity.Services.Core",
         "Unity.Services.Authentication",
