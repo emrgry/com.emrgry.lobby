@@ -1,6 +1,6 @@
 {
   "name": "com.emrgry.lobby",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "displayName": "Emrgry Lobby System",
   "description": "UGS-backed lobby service with drop-in LobbyBootstrap and LobbyConnectionFlow that combines lobby + relay flows. Supports password-protected lobbies, query, join by id/code, heartbeat. Requires com.emrgry.core + com.emrgry.network (install via git URL).",
   "unity": "6000.0",

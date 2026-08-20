@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Unity.Services.Authentication;
@@ -15,7 +17,6 @@ namespace Emrgry.Lobby
         private const float HeartbeatIntervalSeconds = 15f;
         private const string KeyRelayJoinCode = "relayJoinCode";
         private const string KeyIsInGame = "isInGame";
-        private const string KeyPassword = "password";
         private const string KeyHasPassword = "hasPassword";
 
         private Unity.Services.Lobbies.Models.Lobby _currentLobby;
@@ -44,16 +45,16 @@ namespace Emrgry.Lobby
             {
                 if (string.IsNullOrEmpty(password))
                     throw new ArgumentException("Password required when lobby is password protected.", nameof(password));
-                data[KeyPassword] = new DataObject(DataObject.VisibilityOptions.Member, password);
                 data[KeyHasPassword] = new DataObject(DataObject.VisibilityOptions.Public, "true");
             }
 
-            // Password-protected lobbies must stay public so they appear in QueryLobbies; protection is via Member password data.
+            // Password-protected lobbies stay public so they appear in QueryLobbies; UGS enforces the password server-side.
             var options = new CreateLobbyOptions
             {
                 IsPrivate = false,
                 Player = MakePlayer(),
-                Data = data
+                Data = data,
+                Password = isPasswordProtected ? NormalizePassword(password) : null
             };
 
             _currentLobby = await UGSLobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
@@ -90,20 +91,46 @@ namespace Emrgry.Lobby
             return results;
         }
 
-        public async UniTask<LobbyInfo> JoinLobbyByIdAsync(string lobbyId)
+        public async UniTask<LobbyInfo> JoinLobbyByIdAsync(string lobbyId, string password = null)
         {
-            var options = new JoinLobbyByIdOptions { Player = MakePlayer() };
-            _currentLobby = await UGSLobbyService.Instance.JoinLobbyByIdAsync(lobbyId, options);
+            var options = new JoinLobbyByIdOptions
+            {
+                Player = MakePlayer(),
+                Password = string.IsNullOrEmpty(password) ? null : NormalizePassword(password)
+            };
+
+            try
+            {
+                _currentLobby = await UGSLobbyService.Instance.JoinLobbyByIdAsync(lobbyId, options);
+            }
+            catch (LobbyServiceException e) when (e.Reason == LobbyExceptionReason.IncorrectPassword)
+            {
+                throw new LobbyPasswordException(e);
+            }
+
             Debug.Log($"[LobbyService] Joined lobby '{_currentLobby.Name}' (id={lobbyId})");
 
             LobbyChanged?.Invoke();
             return ToLobbyInfo(_currentLobby);
         }
 
-        public async UniTask<LobbyInfo> JoinLobbyByCodeAsync(string lobbyCode)
+        public async UniTask<LobbyInfo> JoinLobbyByCodeAsync(string lobbyCode, string password = null)
         {
-            var options = new JoinLobbyByCodeOptions { Player = MakePlayer() };
-            _currentLobby = await UGSLobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, options);
+            var options = new JoinLobbyByCodeOptions
+            {
+                Player = MakePlayer(),
+                Password = string.IsNullOrEmpty(password) ? null : NormalizePassword(password)
+            };
+
+            try
+            {
+                _currentLobby = await UGSLobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, options);
+            }
+            catch (LobbyServiceException e) when (e.Reason == LobbyExceptionReason.IncorrectPassword)
+            {
+                throw new LobbyPasswordException(e);
+            }
+
             Debug.Log($"[LobbyService] Joined lobby by code '{lobbyCode}'");
 
             LobbyChanged?.Invoke();
@@ -210,6 +237,20 @@ namespace Emrgry.Lobby
             }
         }
 
+        /// <summary>
+        /// UGS requires lobby passwords to be 8-64 chars. Hashing to SHA256 hex (64 chars)
+        /// lifts that restriction from the user while staying deterministic across clients.
+        /// </summary>
+        private static string NormalizePassword(string password)
+        {
+            using var sha = SHA256.Create();
+            byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            var sb = new StringBuilder(hash.Length * 2);
+            foreach (byte b in hash)
+                sb.Append(b.ToString("x2"));
+            return sb.ToString();
+        }
+
         private static Player MakePlayer()
         {
             return new Player(
@@ -224,7 +265,6 @@ namespace Emrgry.Lobby
         {
             string relayCode = "";
             bool isInGame = false;
-            string password = "";
             bool hasPasswordFlag = false;
 
             if (lobby.Data != null)
@@ -233,8 +273,6 @@ namespace Emrgry.Lobby
                     relayCode = codeObj.Value;
                 if (lobby.Data.TryGetValue(KeyIsInGame, out var inGameObj))
                     isInGame = inGameObj.Value == "true";
-                if (lobby.Data.TryGetValue(KeyPassword, out var passObj))
-                    password = passObj.Value;
                 if (lobby.Data.TryGetValue(KeyHasPassword, out var hpObj))
                     hasPasswordFlag = hpObj.Value == "true";
             }
@@ -250,8 +288,7 @@ namespace Emrgry.Lobby
                 IsPasswordProtected = hasPasswordFlag,
                 IsInGame = isInGame,
                 RelayJoinCode = relayCode,
-                HostId = lobby.HostId,
-                Password = password
+                HostId = lobby.HostId
             };
         }
     }
