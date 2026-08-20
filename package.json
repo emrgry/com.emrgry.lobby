@@ -1,6 +1,6 @@
 {
   "name": "com.emrgry.lobby",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "displayName": "Emrgry Lobby System",
   "description": "UGS-backed lobby service: create, query, join (id/code), leave, delete, heartbeat. Supports password-protected lobbies.",
   "unity": "6000.0",

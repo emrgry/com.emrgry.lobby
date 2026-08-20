@@ -14,6 +14,5 @@ namespace Emrgry.Lobby
         public bool IsInGame;
         public string RelayJoinCode;
         public string HostId;
-        public string Password;
     }
 }

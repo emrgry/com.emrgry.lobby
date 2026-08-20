@@ -12,8 +12,10 @@ namespace Emrgry.Lobby
         /// <param name="isPasswordProtected">If true, a password is required to join; lobby stays public so it appears in browse.</param>
         UniTask<LobbyInfo> CreateLobbyAsync(string lobbyName, int maxPlayers, bool isPasswordProtected, string relayJoinCode, string password = null);
         UniTask<IReadOnlyList<LobbyInfo>> QueryLobbiesAsync();
-        UniTask<LobbyInfo> JoinLobbyByIdAsync(string lobbyId);
-        UniTask<LobbyInfo> JoinLobbyByCodeAsync(string lobbyCode);
+        /// <exception cref="LobbyPasswordException">Password missing or incorrect for a protected lobby.</exception>
+        UniTask<LobbyInfo> JoinLobbyByIdAsync(string lobbyId, string password = null);
+        /// <exception cref="LobbyPasswordException">Password missing or incorrect for a protected lobby.</exception>
+        UniTask<LobbyInfo> JoinLobbyByCodeAsync(string lobbyCode, string password = null);
         UniTask LeaveLobbyAsync();
         UniTask UpdateLobbyDataAsync(bool isInGame);
         UniTask DeleteLobbyAsync();
