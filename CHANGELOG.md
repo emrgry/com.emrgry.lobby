@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.2] — 2026-08-20
+
+### Fixed
+- Lobby passwords are now enforced server-side via UGS native password support
+  (`CreateLobbyOptions.Password`, `JoinLobbyByIdOptions.Password`,
+  `JoinLobbyByCodeOptions.Password`). Previously the password was only stored as
+  member-visible lobby data and never verified on join.
+- Passwords are normalized to SHA256 hex (64 chars) so users may enter short
+  passwords despite the UGS 8-64 char requirement.
+- The plaintext member-visible `password` DataObject is gone; the public
+  `hasPassword` flag remains for lock icons in browse lists.
+
+### Added
+- `LobbyPasswordException` — thrown by the join methods when the password is
+  missing or incorrect.
+- Optional `password` parameter on `ILobbyService.JoinLobbyByIdAsync` /
+  `JoinLobbyByCodeAsync` and `LobbyConnectionFlow.JoinGameByIdAsync` /
+  `JoinGameByCodeAsync`.
+
+### Removed
+- `LobbyInfo.Password` field (no longer exposed anywhere).
+
+Also released as hotfix tag `v1.1.1` on top of v1.1.0 for projects not yet on the 1.2 line.
+
 ## [1.2.0] — 2026-05-11
 
 ### Added

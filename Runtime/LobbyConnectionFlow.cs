@@ -85,14 +85,16 @@ namespace Emrgry.Lobby
         /// <summary>
         /// Join a lobby by UGS id, read its embedded relay code, and join the relay.
         /// </summary>
-        public static UniTask<LobbyJoinResult> JoinGameByIdAsync(string lobbyId) =>
-            JoinInternal(lobby => lobby.JoinLobbyByIdAsync(lobbyId), $"id={lobbyId}");
+        /// <param name="password">Lobby password; required when the lobby is password protected.</param>
+        public static UniTask<LobbyJoinResult> JoinGameByIdAsync(string lobbyId, string password = null) =>
+            JoinInternal(lobby => lobby.JoinLobbyByIdAsync(lobbyId, password), $"id={lobbyId}");
 
         /// <summary>
         /// Join a lobby by short code, read its embedded relay code, and join the relay.
         /// </summary>
-        public static UniTask<LobbyJoinResult> JoinGameByCodeAsync(string lobbyCode) =>
-            JoinInternal(lobby => lobby.JoinLobbyByCodeAsync(lobbyCode), $"code={lobbyCode}");
+        /// <param name="password">Lobby password; required when the lobby is password protected.</param>
+        public static UniTask<LobbyJoinResult> JoinGameByCodeAsync(string lobbyCode, string password = null) =>
+            JoinInternal(lobby => lobby.JoinLobbyByCodeAsync(lobbyCode, password), $"code={lobbyCode}");
 
         private static async UniTask<LobbyJoinResult> JoinInternal(
             System.Func<ILobbyService, UniTask<LobbyInfo>> joinFn,
